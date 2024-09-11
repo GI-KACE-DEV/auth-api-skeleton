@@ -1,6 +1,7 @@
 # PROJECT DESCRIPTION
 This help you with Authentication with JWT token and cookie authentication.
-High security features; Login attempts. User is limited to 3 chances of successful login.
+Implementation of Role Based Access Control(RBAC)
+High security features with login attempts. User is limited to 3 chances of successful login.
 After every login attempt, the user has to wait for the 10 minutes before continuing.
 After the 3 chances is consumed, an email will be sent to the user to contact the system administrator for reactivation of account.
 Show intruder to the system administrator.
