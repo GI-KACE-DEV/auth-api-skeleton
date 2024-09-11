@@ -1,4 +1,12 @@
 # PROJECT DESCRIPTION
+This help you with Authentication with JWT token and cookie authentication.
+High security features; Login attempts. User is limited to 3 chances of successful login.
+After every login attempt, the user has to wait for the 10 minutes before continuing.
+After the 3 chances is consumed, an email will be sent to the user to contact the system administrator for reactivation of account.
+Show intruder to the system administrator.
+User Management: Sends a reset password email to new users.
+User can request a reset password.
+Update password with reset password token.
 
 ## Ready to set up the project:
     git clone https://github.com/GI-KACE-DEV/auth-api-skeleton.git

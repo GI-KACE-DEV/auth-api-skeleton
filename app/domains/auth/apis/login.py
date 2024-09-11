@@ -136,31 +136,6 @@ async def send_reset_email(username: str, email: str, reset_link: str) -> EmailS
 
     return email_data
 
-@auth_router.post("/forgot_password/")
-async def request_password_reset(reset_password_request: ResetPasswordRequest, db: Session = Depends(get_db)):
-    ## confirm user email 
-    user = db.query(User).filter(User.email == reset_password_request.email).first()
-
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    # Generate reset token
-    token = password_reset_service.generate_reset_token()
-    user.reset_password_token = token
-    db.commit()
-
-    # Send email with the reset link
-    reset_link = f"{settings.FRONTEND_URL}/login/resetpassword?token={token}"
-    
-    # In production, send email with aiosmtplib or any other email library
-    email_data = await send_reset_email(user.email, reset_link)
-
-    # print(f"email_data: {email_data}")
-
-    await Email.sendMailService(email_data, template_name='password_reset.html')
-    
-    return JSONResponse(content={"message": "Password reset link has been sent to your email."}, status_code=200)
-
 
 
 
