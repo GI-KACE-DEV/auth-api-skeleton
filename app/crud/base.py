@@ -1,19 +1,20 @@
-import sys
-from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union
-import json
-from fastapi import HTTPException
+from typing import Any,Dict,Generic,List,Optional,Type,TypeVar,Union
 from fastapi.encoders import jsonable_encoder
-from pydantic import BaseModel
-from pydantic import UUID4
-from sqlalchemy import and_, select
 from sqlalchemy.exc import IntegrityError
+from utils.security import pwd_context
+from sqlalchemy import and_,select
 from sqlalchemy.orm import Session
-import Levenshtein
-from collections import OrderedDict
+from fastapi import HTTPException
+from pydantic import BaseModel
 from sqlalchemy import inspect
-from uuid import UUID
-
 from db.base_class import Base
+from pydantic import UUID4
+from uuid import UUID
+import Levenshtein
+import sys
+
+
+
 
 ModelType = TypeVar("ModelType", bound=Base)
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
@@ -78,6 +79,33 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):  # 1
     
     def get_by_name(self, db: Session, name: Any) -> Optional[ModelType]:
         return db.query(self.model).filter(self.model.name == name).first()
+    
+
+    def get_by_reset_password_token(self, db: Session, token: Any) -> Optional[ModelType]:
+        return db.query(self.model).filter(self.model.reset_password_token == token).first()
+    
+
+
+
+    ## function to update admin or users password base on token after reseting password
+    def update_user_after_reset_password(self,db: Session,*,db_obj: ModelType,
+        obj_in: Union[UpdateSchemaType, Dict[str, Any]]):
+        
+        obj_data = jsonable_encoder(db_obj)
+        if isinstance(obj_in, dict):
+            update_data = obj_in
+        else:
+            update_data = obj_in.dict(exclude_unset=True)
+        for field in obj_data:
+            if field in update_data:
+                setattr(db_obj, field, update_data[field])
+        db_obj.password = pwd_context.hash(obj_in.password)
+        db_obj.reset_password_token = None
+        db.add(db_obj)
+        db.flush()
+        db.commit()
+        db.refresh(db_obj)
+        return db_obj
     
 
     async def create(self, db: Session, *, obj_in: CreateSchemaType) -> ModelType:

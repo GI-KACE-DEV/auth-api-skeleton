@@ -13,7 +13,6 @@ from fastapi.exceptions import HTTPException
 from slowapi.util import get_remote_address
 from domains.auth.models.users import User
 from fastapi.responses import JSONResponse
-from fastapi.responses import FileResponse
 from config.settings import settings
 from sqlalchemy.orm import Session
 from datetime import datetime
@@ -153,10 +152,6 @@ async def request_password_reset(reset_password_request: ResetPasswordRequest, d
     # Send email with the reset link
     reset_link = f"{settings.FRONTEND_URL}/login/resetpassword?token={token}"
     
-    # For demo purposes, print the reset link (use an email sender in production)
-    # print(f"Reset link: {reset_link}")
-    # print(f"User Emaail: {user.email}")
-    
     # In production, send email with aiosmtplib or any other email library
     email_data = await send_reset_email(user.email, reset_link)
 
@@ -166,8 +161,6 @@ async def request_password_reset(reset_password_request: ResetPasswordRequest, d
     
     return JSONResponse(content={"message": "Password reset link has been sent to your email."}, status_code=200)
 
-    # current_user = service_login.get_current_user_by_access_token(token, request, db)
-    # return current_user
 
 
 
