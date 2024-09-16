@@ -1,3 +1,4 @@
+from domains.file_upload.apis.file_upload import file_upload_router
 from domains.auth.apis.logout import logout_auth_router
 from domains.auth.apis.email_router import email_router
 from domains.auth.apis.user_account import users_router
@@ -11,7 +12,7 @@ router = APIRouter()
 router.include_router(auth_router)
 router.include_router(logout_auth_router)
 router.include_router(users_router)
-# router.include_router(role_perm_router)
+router.include_router(file_upload_router)
 router.include_router(role_router)
 # router.include_router(perm_router)
 
