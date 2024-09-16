@@ -8,6 +8,7 @@ Show intruder to the system administrator.
 User Management: Sends a reset password email to new users.
 User can request a reset password.
 Update password with reset password token.
+Upload and delete files from Google Cloud Storage
 
 ## Ready to set up the project:
     git clone https://github.com/GI-KACE-DEV/auth-api-skeleton.git
