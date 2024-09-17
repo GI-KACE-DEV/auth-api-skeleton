@@ -91,33 +91,21 @@ async def check_if_is_super_admin(current_active_user: Annotated[User, Depends(g
 
 
 
-#function to check if current user is admin
-async def check_if_is_admin(current_active_user: Annotated[User, Depends(get_current_active_user)], db: Session=Depends(get_db)):
-
-    check_user_role = db.query(Role).filter(Role.id == current_active_user.role_id).first()
-
-    if check_user_role.name == "admin":
-        return current_active_user
-    
-    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, 
-                        detail="only event administrator can access this api route")
-    
 
 
 
-
-#function to check if current user is super admin and admin
-async def check_if_is_super_admin_or_admin(current_active_user: Annotated[User, Depends(get_current_user)], db: Session=Depends(get_db)):
+#function to check if current user is super admin and staff
+async def check_if_is_super_admin_or_staff(current_active_user: Annotated[User, Depends(get_current_user)], db: Session=Depends(get_db)):
 
     check_user_role = db.query(Role).filter(Role.id == current_active_user.role_id).first()
 
     
 
-    if check_user_role.name == "admin" or check_user_role.name == "super_admin":
+    if check_user_role.name == "Staff" or check_user_role.name == "Super Admin":
         return current_active_user
     
     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, 
-                        detail="only super admin and event administrator can access this api route")
+                        detail="only Super Admin and Super Admin can access this api route")
     
 
 

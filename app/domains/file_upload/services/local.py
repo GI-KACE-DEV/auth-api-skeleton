@@ -1,25 +1,28 @@
 from fastapi import status,File,UploadFile,status,Form,Depends
 from domains.file_upload.models.gcs import FileUpload
-from domains.file_upload.services.gcstorage import GCStorage
 from utils.rbac import check_if_is_super_admin,check_if_is_super_admin_or_staff
 from fastapi.exceptions import HTTPException
 from typing import Optional,Annotated
 from sqlalchemy.orm import Session
 from pydantic import UUID4
-import random
-import string
 from domains.auth.models.users import User
 from domains.auth.respository.user_account import users_form_actions as users_form_repo
+import os
+import uuid
 from datetime import datetime
 
+# Define the directory where files will be stored
+UPLOAD_DIRECTORY = "uploaded_files"
+os.makedirs(UPLOAD_DIRECTORY, exist_ok=True)
 
 
-class GCSFileUploadService:
-     def get_uploaded_file_by_id(self,db: Session, file_id: UUID4, current_user: User =Depends(check_if_is_super_admin_or_staff)):
-          get_uploaded_file =  db.query(FileUpload).filter(FileUpload.id == file_id).first()
+
+class LocalFileUploadService:
+     def get_uploaded_file_by_id(self, db: Session, file_id: UUID4, current_user: User = Depends(check_if_is_super_admin_or_staff)):
+          get_uploaded_file = db.query(FileUpload).filter(FileUpload.id == file_id).first()
           if not get_uploaded_file:
                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File not found")
-            
+          
           uploaded_by = users_form_repo.get_by_id(id=get_uploaded_file.uploaded_by, db=db)
           deleted_by = users_form_repo.get_by_id(id=get_uploaded_file.deleted_by, db=db)
 
@@ -27,7 +30,7 @@ class GCSFileUploadService:
                "username": None,
                "email": None
           }
-               
+          
           if deleted_by:
                deleted_by_data = {
                     "username": deleted_by.username,
@@ -56,59 +59,76 @@ class GCSFileUploadService:
 
 
 
-     def upload_file(self,db: Session,type: Annotated[str, Form()],
-                      description: Annotated[str, Form()], file: Optional[UploadFile] = File(None), current_user=Depends(check_if_is_super_admin_or_staff)):
-            size=10
-            chars=string.ascii_lowercase + string.digits
-            create_ramdom = ''.join(random.choice(chars) for _ in range(size))
-            filename = create_ramdom + "-" + str(current_user.id) + "-" + file.filename
-            file_url_path = GCStorage().upload_file_to_gcp(url=file, type=type, filename=filename)
-            if not file_url_path:
-                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Error while uploading file")
-            upload_file = FileUpload(uploaded_by = current_user.id, url=file_url_path, type_of_upload="gcs", file_type=type, description=description, filename=filename)
-            db.add(upload_file)
-            db.commit()
-            db.refresh(upload_file)
-
-            user_db = users_form_repo.get_by_id(id=current_user.id, db=db)
-            
-            db_data = {
-                 "id": upload_file.id,
-                 "url": upload_file.url,
-                 "file_type": upload_file.file_type,
-                 "description": upload_file.description,
-                 "filename": upload_file.filename,
-                 "type_of_upload": upload_file.type_of_upload,
-                 "uploaded_by": {
-                      "username": user_db.username,
-                      "email": user_db.email
-                 },
-                 "is_deleted": upload_file.is_deleted,
-                 "deleted_at": upload_file.deleted_at,
-                 "deleted_reason": upload_file.deleted_reason,
-                 "deleted_by": upload_file.deleted_by,
-                 "created_at": upload_file.created_date,
-                 "updated_at": upload_file.updated_date,
-            }
-
-            return db_data
-        
 
 
+     def upload_file(self, db: Session, type: Annotated[str, Form()],
+                    description: Annotated[str, Form()], file: Optional[UploadFile] = File(None), 
+                    current_user=Depends(check_if_is_super_admin_or_staff)):
+
+          if not file:
+               raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No file uploaded")
+
+          # Create a unique filename
+          unique_id = str(uuid.uuid4())
+          filename = f"{unique_id}-{current_user.id}-{file.filename}"
+          file_path = os.path.join(UPLOAD_DIRECTORY, filename)
+
+          # Save the file locally
+          with open(file_path, "wb") as buffer:
+               buffer.write(file.file.read())
+
+          # Save file information to the database
+          upload_file = FileUpload(uploaded_by=current_user.id, type_of_upload="local", url=file_path, file_type=type, description=description, filename=filename)
+          db.add(upload_file)
+          db.commit()
+          db.refresh(upload_file)
+
+          user_db = users_form_repo.get_by_id(id=current_user.id, db=db)
+
+          db_data = {
+               "id": upload_file.id,
+               "url": upload_file.url,
+               "file_type": upload_file.file_type,
+               "description": upload_file.description,
+               "filename": upload_file.filename,
+               "type_of_upload": upload_file.type_of_upload,
+               "uploaded_by": {
+                    "username": user_db.username,
+                    "email": user_db.email
+               },
+               "is_deleted": upload_file.is_deleted,
+               "deleted_by": upload_file.deleted_by,
+               "deleted_at": upload_file.deleted_at,
+               "deleted_reason": upload_file.deleted_reason,
+               "created_at": upload_file.created_date,
+               "updated_at": upload_file.updated_date,
+          }
+
+          return db_data
 
 
-     def remove_upload_file(self,db: Session, file_id: UUID4, filename: str, deleted_reason: str, current_user=Depends(check_if_is_super_admin)):
+
+     def remove_upload_file(self, db: Session, file_id: UUID4, deleted_reason: str, 
+                         current_user: UUID4):
 
           get_file = db.query(FileUpload).filter(FileUpload.id == file_id).first()
-          delete_file = GCStorage().delete_file_to_gcp(type=get_file.file_type, filename=filename)
-          if not delete_file:
-               raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Error while deleting file")
-            
+          if not get_file:
+               raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File not found")
+
+          # Delete file from local storage
+          file_path = os.path.join(UPLOAD_DIRECTORY, get_file.filename)
+          if os.path.exists(file_path):
+               os.remove(file_path)
+          else:
+               raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="File not found on local storage")
+
+          # Update file record in the database
+          
           db.query(FileUpload).filter(FileUpload.id == file_id).update({
                FileUpload.is_deleted: True,
                FileUpload.deleted_reason: deleted_reason,
                FileUpload.deleted_by: current_user,
-               FileUpload.deleted_at: datetime.utcnow()
+               FileUpload.deleted_at: datetime.utcnow()  # Ensure to import and use correct datetime
           }, synchronize_session=False)
           db.commit()
 
@@ -142,4 +162,5 @@ class GCSFileUploadService:
 
 
 
-gcs_file_upload_service = GCSFileUploadService()
+
+local_file_upload_service = LocalFileUploadService()
