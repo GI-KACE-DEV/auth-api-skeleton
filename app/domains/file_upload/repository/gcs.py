@@ -1,6 +1,6 @@
 from crud.base import CRUDBase
-from domains.file_upload.models.file_upload import FileUpload
-from domains.file_upload.schemas.file_upload import (
+from domains.file_upload.models.gcs import FileUpload
+from app.domains.file_upload.schemas.gcs import (
     FileUploadCreate, FileUploadUpdate
 )
 

@@ -1,5 +1,5 @@
 from fastapi import status,File,UploadFile,status,Form,Depends
-from domains.file_upload.models.file_upload import FileUpload
+from domains.file_upload.models.gcs import FileUpload
 from domains.file_upload.services.gcstorage import GCStorage
 from utils.rbac import check_if_is_super_admin
 from fastapi.exceptions import HTTPException

@@ -1,4 +1,4 @@
-from domains.file_upload.apis.file_upload import file_upload_router
+from domains.file_upload.apis.gcs import file_upload_router
 from domains.auth.apis.logout import logout_auth_router
 from domains.auth.apis.email_router import email_router
 from domains.auth.apis.user_account import users_router

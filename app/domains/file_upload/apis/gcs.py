@@ -1,4 +1,4 @@
-from domains.file_upload.services.file_upload import file_upload_service as actions
+from domains.file_upload.services.gcs import file_upload_service as actions
 from fastapi import APIRouter,File,UploadFile,Depends,status,Form
 from utils.rbac import check_if_is_super_admin
 from utils.rbac import check_if_is_super_admin
