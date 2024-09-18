@@ -16,7 +16,6 @@ Upload and delete files from Google Cloud Storage
 
 ## Installing Packages for Windows
 - Run the following command in your terminal
-    - cd backend
     - cd app
     - pip install -r requirements.txt
 
@@ -34,7 +33,6 @@ Upload and delete files from Google Cloud Storage
 
 ## Installing Packages for Linux, Ubuntu
 - Run the following command in your terminal
-    - cd backend
     - cd app
     - python3 -m venv venv
     - source venv/bin/activate
