@@ -97,10 +97,10 @@ class GCSFileUploadService:
 
 
 
-     def remove_upload_file(self,db: Session, file_id: UUID4, filename: str, deleted_reason: str, current_user=Depends(check_if_is_super_admin)):
+     def remove_upload_file(self,db: Session, file_id: UUID4, deleted_reason: str, current_user=Depends(check_if_is_super_admin)):
 
           get_file = db.query(FileUpload).filter(FileUpload.id == file_id).first()
-          delete_file = GCStorage().delete_file_to_gcp(type=get_file.file_type, filename=filename)
+          delete_file = GCStorage().delete_file_to_gcp(type=get_file.file_type, filename=get_file.filename)
           if not delete_file:
                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Error while deleting file")
             
