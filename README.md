@@ -11,27 +11,21 @@ Update password with reset password token.
 Upload and delete files locally.
 Upload and delete files from Google Cloud Storage
 
+
 ## Ready to set up the project:
     git clone https://github.com/GI-KACE-DEV/auth-api-skeleton.git
-
-## Installing Packages for Windows
-- Run the following command in your terminal
-    - cd app
-    - pip install -r requirements.txt
-
 
 ## CREATION OF DATABASE MANUALLY
 >  Create a database name: **auth_api_db**
 
-
-
-## RUNNING OR STARTING APPLICATION
-- Running FastAPI Service Locally
+## Installing Packages for Windows and STARTING APPLICATION
+- Run the following command in your terminal
+    - cd app
+    - pip install -r requirements.txt
     - uvicorn main:app --reload
 
 
-
-## Installing Packages for Linux, Ubuntu
+## Installing Packages for Linux, Ubuntu and STARTING APPLICATION
 - Run the following command in your terminal
     - cd app
     - python3 -m venv venv
