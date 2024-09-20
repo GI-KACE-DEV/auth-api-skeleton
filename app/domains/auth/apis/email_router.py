@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from pydantic import EmailStr, BaseModel
 from typing import List
-from services.email_service import EmailSchema, Email 
+from services.email_service import EmailSchema,Email 
 
 
 email_router = APIRouter(

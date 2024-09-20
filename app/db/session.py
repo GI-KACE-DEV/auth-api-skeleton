@@ -1,11 +1,12 @@
+from google.cloud.sql.connector import Connector,IPTypes
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker,scoped_session
 from sqlalchemy import create_engine,MetaData
 from config.settings import Settings
 import sqlalchemy 
-from google.cloud.sql.connector import Connector, IPTypes
 import pg8000
-from sqlalchemy import text
+
+
 
 SQLALCHEMY_DATABASE_URL = Settings.SQLALCHEMY_DATABASE_URL
 INSTANCE_CONNECTION_NAME = Settings.INSTANCE_CONNECTION_NAME

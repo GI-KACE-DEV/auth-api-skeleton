@@ -1,13 +1,14 @@
-from uuid import UUID as UUID_V
-import inflect
-import typing as t
-from sqlalchemy.ext.declarative import declared_attr, as_declarative, declarative_base
-from sqlalchemy import Column, String,  DateTime
-from datetime import datetime, timezone
+from sqlalchemy.ext.declarative import declared_attr, as_declarative
 from sqlalchemy.dialects.postgresql import UUID
-from typing import Any
-import uuid
+from sqlalchemy import Column, DateTime
+from datetime import datetime, timezone
+from uuid import UUID as UUID_V
 from functools import reduce
+from typing import Any
+import typing as t
+import inflect
+import uuid
+
 
 
 class_registry: t.Dict = {}
